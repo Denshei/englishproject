@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Interactive Game</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: background-color 0.5s ease-in-out;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 40px;
+            background-color: #ffffffcc;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        #lives {
+            display: inline-block;
+            transition: transform 0.3s, color 0.3s;
+        }
+
+        .life-lost {
+            color: #dc3545;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            50% {
+                transform: translateX(5px);
+            }
+
+            75% {
+                transform: translateX(-5px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        .game-container {
+            max-width: 700px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .btn-option {
+            margin: 10px;
+            font-size: 1.25rem;
+            padding: 15px 30px;
+            border-radius: 30px;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-option:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-option.correct {
+            animation: correct 0.5s ease;
+        }
+
+        .btn-option.wrong {
+            animation: shake 0.5s, wrong-color 0.5s;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 15px 30px;
+            background-color: #007bff;
+            color: white;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        footer span {
+            font-style: italic;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes correct {
+            0% {
+                background-color: #28a745;
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                background-color: #198754;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes wrong-color {
+            0% {
+                background-color: #dc3545;
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                background-color: #bd2130;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            50% {
+                transform: translateX(5px);
+            }
+
+            75% {
+                transform: translateX(-5px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        .congratulations {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #28a745;
+            animation: congratulations 1s ease-in-out;
+        }
+
+        @keyframes congratulations {
+            0% {
+                transform: scale(1);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .game-over {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #dc3545;
+            animation: gameOver 1s ease-in-out;
+        }
+
+        @keyframes gameOver {
+            0% {
+                transform: scale(1);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-header">
+        <div>SQL Interactive Game</div>
+        <div>
+            Lives: <span id="lives">3</span>
+            <button id="go-to-index" class="btn btn-sm btn-secondary ms-3">Go to Home</button>
+        </div>
+    </div>
+    <br>
+    <br>
+    <br>
+    <div class="container">
+        <div class="game-container">
+            <p id="question" class="fw-bold mb-4"></p>
+            <div id="options" class="mb-4"></div>
+            <button id="restart" class="btn btn-primary mt-4 d-none">Restart</button>
+            <p id="result-message" class="mt-4"></p>
+        </div>
+    </div>
+    <footer id="footer-tip">
+        <span>Tip:</span> SQL is all about logic. Plan your queries carefully!
+    </footer>
+    <script>
+        document.getElementById('go-to-index').onclick = function() {
+            window.location.href = 'index.html'; // Redirige a index.html
+        };
+    </script>
+    <!-- Bootstrap JS Bundle -->
+    <script>
+        const questions = [
+            { question: "SELECT * FROM ____ WHERE id = 1;", correctAnswer: "table_name", options: ["database_name", "table_name", "column_name"], tip: "The '*' symbol selects all columns." },
+            { question: "INSERT INTO table_name (column1, column2) VALUES (____, 'value2');", correctAnswer: "'value1'", options: ["'value1'", "column2", "value2"], tip: "Use single quotes for string values." },
+            { question: "DELETE FROM table_name WHERE ____ = 10;", correctAnswer: "column_name", options: ["column_name", "table_name", "value"], tip: "DELETE removes rows. Use with caution." },
+            { question: "UPDATE table_name SET column1 = 'new_value' WHERE ____ = 1;", correctAnswer: "id", options: ["id", "column1", "value"], tip: "Always specify WHERE when updating rows." },
+            { question: "ORDER BY ____;", correctAnswer: "column_name", options: ["table_name", "column_name", "id"], tip: "ORDER BY sorts data." },
+            { question: "CREATE TABLE ____ (id INT, name VARCHAR(50));", correctAnswer: "table_name", options: ["database_name", "table_name", "column_name"], tip: "CREATE TABLE defines a new table." },
+            { question: "WHERE ____ = 10;", correctAnswer: "column_name", options: ["column_name", "table_name", "value"], tip: "WHERE filters rows in a query." },
+            { question: "SELECT ____ FROM table_name;", correctAnswer: "column_name", options: ["table_name", "column_name", "*"], tip: "Specify columns or use '*'." },
+            { question: "JOIN table_name ON ____;", correctAnswer: "column_name", options: ["id", "column_name", "value"], tip: "JOIN combines rows from tables." },
+            { question: "GROUP BY ____;", correctAnswer: "column_name", options: ["table_name", "column_name", "id"], tip: "GROUP BY groups rows sharing values." },
+            { question: "INSERT INTO ____ (id, name) VALUES (1, 'John');", correctAnswer: "table_name", options: ["database_name", "table_name", "column_name"], tip: "Specify the table name for insertion." },
+            { question: "DELETE FROM ____ WHERE id = 5;", correctAnswer: "table_name", options: ["database_name", "table_name", "column_name"], tip: "Indicate the table to delete from." },
+            { question: "UPDATE ____ SET column1 = 'value' WHERE id = 2;", correctAnswer: "table_name", options: ["database_name", "table_name", "column_name"], tip: "Indicate the table to update." }
+        ];
+
+        let currentQuestionIndex = 0;
+        let lives = 3;
+
+        function getRandomBackgroundColor() {
+            const colors = ['#f0a500', '#f25f5c', '#00a8cc', '#e9c46a', '#2a9d8f', '#264653'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function displayQuestion() {
+            if (currentQuestionIndex >= questions.length || lives === 0) {
+                endGame();
+                return;
+            }
+
+            const currentQuestion = questions[currentQuestionIndex];
+            const questionText = document.getElementById('question');
+            const optionsContainer = document.getElementById('options');
+            const resultMessage = document.getElementById('result-message');
+            const restartButton = document.getElementById('restart');
+            const footerTip = document.getElementById('footer-tip');
+
+            // Cambiar el fondo de pantalla aleatoriamente
+            document.body.style.backgroundColor = getRandomBackgroundColor();
+
+            // Mostrar la pregunta
+            questionText.textContent = currentQuestion.question;
+            optionsContainer.innerHTML = "";
+
+            // Mostrar las opciones
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.classList.add('btn', 'btn-option');
+                button.textContent = option;
+                button.onclick = function () {
+                    checkAnswer(option, button);
+                };
+                optionsContainer.appendChild(button);
+            });
+
+            // Mostrar el tip de la pregunta
+            footerTip.innerHTML = `<span>Tip:</span> ${currentQuestion.tip}`;
+
+            // Limpiar los resultados y reiniciar el botón
+            resultMessage.textContent = "";
+            restartButton.classList.add('d-none');
+        }
+
+        function checkAnswer(answer, selectedButton) {
+            const currentQuestion = questions[currentQuestionIndex];
+            const resultMessage = document.getElementById('result-message');
+
+            // Solo se anima la opción seleccionada
+            if (answer === currentQuestion.correctAnswer) {
+                selectedButton.classList.add('correct');
+                resultMessage.textContent = "Correct!";
+                resultMessage.classList.remove('game-over');
+                resultMessage.classList.add('congratulations');
+                currentQuestionIndex++;
+            } else {
+                lives--;
+                document.getElementById('lives').textContent = lives;
+                selectedButton.classList.add('wrong');
+                resultMessage.textContent = "Wrong answer!";
+                resultMessage.classList.remove('congratulations');
+                resultMessage.classList.add('game-over');
+                if (lives <= 0) {
+                    disableOptions(); // Deshabilitar las opciones cuando se quedan sin vidas
+                    endGame();
+                    return;
+                }
+            }
+
+            setTimeout(displayQuestion, 1000);
+        }
+
+        // Deshabilitar todos los botones de opción
+        function disableOptions() {
+            const buttons = document.querySelectorAll('.btn-option');
+            buttons.forEach(button => {
+                button.disabled = true;
+            });
+        }
+
+
+        function endGame() {
+            const resultMessage = document.getElementById('result-message');
+            const restartButton = document.getElementById('restart');
+            if (lives === 0) {
+                resultMessage.textContent = "Game Over!";
+                resultMessage.classList.remove('congratulations');
+                resultMessage.classList.add('game-over');
+            } else {
+                resultMessage.textContent = "You won!";
+                resultMessage.classList.remove('game-over');
+                resultMessage.classList.add('congratulations');
+            }
+            restartButton.classList.remove('d-none');
+            restartButton.onclick = restartGame;
+        }
+
+        function restartGame() {
+            lives = 3;
+            currentQuestionIndex = 0;
+            document.getElementById('lives').textContent = lives;
+            const restartButton = document.getElementById('restart');
+            restartButton.classList.add('d-none');
+            displayQuestion();
+        }
+
+        displayQuestion();
+    </script>
+    
+</body>
+
+</html>
